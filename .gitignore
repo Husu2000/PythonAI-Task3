@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+
+# Django
+media/exports/*
+media/uploads/*
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

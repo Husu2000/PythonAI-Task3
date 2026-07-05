@@ -1,0 +1,47 @@
+<h2>Products</h2>
+
+<form method="get" style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+    <div>
+        <label>Product Name</label><br>
+        {{ form.name }}
+    </div>
+    <div>
+        <label>Min Count</label><br>
+        {{ form.min_count }}
+    </div>
+    <div>
+        <label>Max Count</label><br>
+        {{ form.max_count }}
+    </div>
+    <div>
+        <button type="submit">Filter</button>
+        <a href="{% url 'product_list' %}"><button type="button">Clear</button></a>
+    </div>
+</form>
+
+
+<p>
+    <a href="{% url 'template_download' %}">Download Template</a> 
+</p>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>SKU</th> <th>Name</th> <th>Category</th> <th>Price</th> <th>Count</th> <th>Date</th>
+    </tr>
+
+    {% for p in qs %}
+        <tr>
+        <td>{{ p.sku }}</td>
+        <td>{{ p.name }}</td>
+        <td>{{ p.category }}</td>
+        <td>
+            {{ p.price }}$
+        </td>
+        <td>{{ p.quantity }}</td>
+        <td>{{ p.tx_date }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No items found</td></tr>
+    {% endfor %}
+</table>
+
