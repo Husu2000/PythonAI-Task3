@@ -125,12 +125,13 @@ def stats_view(request):
         go.Figure(data=[
             go.Scatter(x=[str(r["month"])[:7] for r in monthly],
                        y=[float(r["revenue"] or 0) for r in monthly],
-                       mode="lines+markers", name="Gəlir",
-                       line=dict(color="#636EFA", width=3), marker=dict(size=8)),
+                       mode="lines", name="Gəlir",
+                       fill="tozeroy",
+                       line=dict(color="#636EFA", width=3)),
             go.Bar(x=[str(r["month"])[:7] for r in monthly],
                    y=[r["items"] for r in monthly],
                    name="Sifariş sayı", yaxis="y2",
-                   marker_color="#EF553B", opacity=0.5),
+                   marker_color="#EF553B", opacity=0.6),
         ], layout=go.Layout(
             title="Aylıq Gəlir",
             yaxis=dict(title="Gəlir ($)"),
@@ -141,53 +142,66 @@ def stats_view(request):
 
     chart_quarterly = plot(
         go.Figure(data=[
-            go.Bar(x=[f"Q{r['q']}" for r in quarterly],
+            go.Bar(name="Gəlir",
+                   x=[f"Q{r['q']}" for r in quarterly],
                    y=[float(r["revenue"] or 0) for r in quarterly],
-                   name="Gəlir", marker_color="#00CC96"),
-            go.Scatter(x=[f"Q{r['q']}" for r in quarterly],
-                       y=[float(r["avg_price"] or 0) for r in quarterly],
-                       name="Orta qiymət", mode="lines+markers",
-                       yaxis="y2", line=dict(color="#AB63FA", width=2)),
+                   marker_color="#00CC96"),
+            go.Bar(name="Orta qiymət",
+                   x=[f"Q{r['q']}" for r in quarterly],
+                   y=[float(r["avg_price"] or 0) for r in quarterly],
+                   marker_color="#AB63FA", yaxis="y2"),
         ], layout=go.Layout(
             title="Rüblük Gəlir",
             yaxis=dict(title="Gəlir ($)"),
             yaxis2=dict(title="Orta qiymət ($)", overlaying="y", side="right"),
+            barmode="group",
             legend=dict(x=0, y=1.1, orientation="h"), template="plotly_white",
         )), output_type="div", include_plotlyjs=False
     )
 
     chart_by_cat = plot(
         go.Figure(data=[
-            go.Pie(labels=[r["category"] or "Unknown" for r in by_cat],
-                   values=[r["total_qty"] or 0 for r in by_cat],
-                   hole=0.4, name="Stok payı"),
+            go.Bar(y=[r["category"] or "Unknown" for r in by_cat],
+                   x=[r["total_qty"] or 0 for r in by_cat],
+                   orientation="h",
+                   marker_color="#00CC96",
+                   text=[r["total_qty"] or 0 for r in by_cat],
+                   textposition="outside"),
         ], layout=go.Layout(
-            title="Kateqoriyaya görə Stok Payı", template="plotly_white",
+            title="Kateqoriyaya görə Stok Miqdarı",
+            xaxis=dict(title="Stok sayı"),
+            yaxis=dict(autorange="reversed"),
+            template="plotly_white", height=350,
         )), output_type="div", include_plotlyjs=False
     )
 
     chart_top_sku = plot(
         go.Figure(data=[
-            go.Bar(y=[r["name"] for r in top_sku],
-                   x=[float(r["revenue"] or 0) for r in top_sku],
-                   orientation="h", marker_color="#FFA15A",
+            go.Bar(x=[r["name"] for r in top_sku],
+                   y=[float(r["revenue"] or 0) for r in top_sku],
+                   marker_color="#FFA15A",
                    text=[f"${float(r['revenue'] or 0):,.0f}" for r in top_sku],
                    textposition="outside"),
         ], layout=go.Layout(
             title="TOP 10 Məhsul (Gəlirə görə)",
-            xaxis=dict(title="Gəlir ($)"), yaxis=dict(autorange="reversed"),
+            yaxis=dict(title="Gəlir ($)"),
+            xaxis=dict(tickangle=-30),
             template="plotly_white", height=420,
         )), output_type="div", include_plotlyjs=False
     )
 
     chart_low_stock = plot(
         go.Figure(data=[
-            go.Bar(x=[r.name for r in low_stock], y=[r.quantity for r in low_stock],
+            go.Bar(y=[r.name for r in low_stock],
+                   x=[r.quantity for r in low_stock],
+                   orientation="h",
                    marker_color=["#EF553B" if r.quantity == 0 else "#FFA15A" for r in low_stock],
-                   text=[r.quantity for r in low_stock], textposition="outside"),
+                   text=[r.quantity for r in low_stock],
+                   textposition="outside"),
         ], layout=go.Layout(
             title="Stok Azlığı (≤ 5 ədəd)",
-            xaxis=dict(title="Məhsul"), yaxis=dict(title="Miqdar"),
+            xaxis=dict(title="Miqdar"),
+            yaxis=dict(autorange="reversed"),
             template="plotly_white",
         )), output_type="div", include_plotlyjs=False
     )
