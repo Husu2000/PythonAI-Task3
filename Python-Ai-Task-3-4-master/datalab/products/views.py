@@ -13,15 +13,18 @@ from .models import Product
 
 
 def dashboard(request):
+    # Umumi melumatlari cekirik
     kpi=Product.objects.aggregate(
         products=Count('id'),
         total_qty=Sum('quantity'),
         avg_price=Avg('price'),
     )
 
+    # Gelir hesabi ucun
     revenue_exr=ExpressionWrapper(F('price')*F('quantity'),
                                   output_field=DecimalField(max_digits=12,decimal_places=2))
 
+    # En cox gelir getiren kateqoriyalar
     top_cats=(Product.objects
               .values("category")
               .annotate(revenue=Sum(revenue_exr),items=Count("id"))
@@ -35,6 +38,7 @@ def product_upload(request):
     if request.method=="POST":
         form=UploadForm(request.POST,request.FILES)
         if form.is_valid():
+            # Fayli yadda saxla
             up=request.FILES["file"]
             sheet=form.cleaned_data.get("sheet_name") or None
             updir=os.path.join(settings.MEDIA_ROOT,"uploads")
@@ -44,13 +48,15 @@ def product_upload(request):
                 for ch in up.chunks():
                     dest.write(ch)
 
+            # Excel/CSV den oxu
             df=utils.read_any(fpath,sheet)
             df=utils.normalize_for_product(df)
 
             rows=df.to_dict("records")
-            if len(rows)==1:
-                r=rows[0]
+            say=len(rows)
 
+            # Melumatlari bazaya yaz
+            for r in rows:
                 Product.objects.update_or_create(
                     sku=r["sku"],
                     defaults=dict(
@@ -62,20 +68,7 @@ def product_upload(request):
                     )
                 )
 
-            elif len(rows)>1:
-                for r in rows:
-                    Product.objects.update_or_create(
-                        sku=r["sku"],
-                        defaults=dict(
-                            name=r["name"],
-                            price=r["price"],
-                            quantity=int(r["quantity"]),
-                            category=r.get("category") or "",
-                            tx_date=r["tx_date"],
-                        )
-                    )
-
-            ctx["msg"]=f"Uploaded : {len(rows)} rows"
+            ctx["msg"]=f"Uploaded : {say} rows"
 
     return render(request,"products/upload.html",ctx)
 
@@ -87,11 +80,14 @@ def product_export(request):
     return FileResponse(open(path,"rb"),as_attachment=True,filename=os.path.basename(path))
 
 def stats_view(request):
+    # Plotly import
     import plotly.graph_objects as go
     from plotly.offline import plot
 
+    # Gelir hesablama
     revenue_exr=ExpressionWrapper(F('price')*F('quantity'),output_field=DecimalField(max_digits=12,decimal_places=2))
 
+    # 1) Aylıq melumatlar
     monthly=list(Product.objects
              .annotate(month=TruncMonth("tx_date"))
              .values("month")
@@ -99,6 +95,7 @@ def stats_view(request):
              .order_by("month")
              )
 
+    # 2) Rüblük melumatlar
     quarterly=list(Product.objects
                .annotate(q=ExtractQuarter("tx_date"))
                .values("q")
@@ -106,17 +103,20 @@ def stats_view(request):
                .order_by("q")
                )
 
+    # 3) Kateqoriya üzrə
     by_cat=list(Product.objects
             .values("category")
             .annotate(mean_price=Avg('price'),total_qty=Sum('quantity'))
             .order_by("-total_qty"))
 
+    # 4) TOP 10 mehsul
     top_sku=list(Product.objects
             .values("sku","name","category")
              .annotate(revenue=Sum(revenue_exr),qty=Sum("quantity"))
              .order_by("-revenue")[:10]
              )
 
+    # 5) Stoku az olanlar
     low_stock=list(Product.objects
                .filter(quantity__lte=5).order_by("quantity","name")[:10]
                )
@@ -235,6 +235,7 @@ def product_list(request):
 
 
 def template_download(request):
+    # CSV template yaradiriq
     import csv
     from django.http import HttpResponse
     response=HttpResponse(content_type="text/csv")
