@@ -1,0 +1,97 @@
+<h2>Statistika</h2>
+
+<h3>1) Aylıq Gəlir</h3>
+<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+    <div style="flex:1; min-width:300px;">
+        <table border="1" cellpadding="6">
+            <tr><th>Ay</th><th>Gəlir</th><th>Items</th></tr>
+            {% for r in monthly %}
+            <tr><td>{{ r.month|date:"Y-m" }}</td><td>{{ r.revenue }}</td><td>{{ r.items }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">Məlumat yoxdur</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="flex:3; min-width:400px;">
+        {{ chart_monthly|safe }}
+    </div>
+</div>
+
+<hr>
+
+<h3>2) Rüb üzrə Gəlir</h3>
+<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+    <div style="flex:1; min-width:300px;">
+        <table border="1" cellpadding="6">
+            <tr><th>Rüb</th><th>Gəlir</th><th>Orta qiymət</th></tr>
+            {% for r in quarterly %}
+            <tr><td>Q{{ r.q }}</td><td>{{ r.revenue }}</td><td>{{ r.avg_price }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">Məlumat yoxdur</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="flex:3; min-width:400px;">
+        {{ chart_quarterly|safe }}
+    </div>
+</div>
+
+<hr>
+
+<h3>3) Kateqoriya üzrə</h3>
+<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+    <div style="flex:1; min-width:300px;">
+        <table border="1" cellpadding="6">
+            <tr><th>Kateqoriya</th><th>Orta qiymət</th><th>Toplam stok</th></tr>
+            {% for r in by_cat %}
+            <tr><td>{{ r.category }}</td><td>{{ r.mean_price }}</td><td>{{ r.total_qty }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">Məlumat yoxdur</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="flex:3; min-width:400px;">
+        {{ chart_by_cat|safe }}
+    </div>
+</div>
+
+<hr>
+
+<h3>4) TOP SKU (Gəlir)</h3>
+<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+    <div style="flex:1; min-width:300px;">
+        <table border="1" cellpadding="6">
+            <tr><th>SKU</th><th>Ad</th><th>Kateqoriya</th><th>Gəlir</th><th>Stok</th></tr>
+            {% for r in top_sku %}
+            <tr><td>{{ r.sku }}</td><td>{{ r.name }}</td><td>{{ r.category }}</td><td>{{ r.revenue }}</td><td>{{ r.qty }}</td></tr>
+            {% empty %}
+            <tr><td colspan="5">Məlumat yoxdur</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="flex:3; min-width:400px;">
+        {{ chart_top_sku|safe }}
+    </div>
+</div>
+
+<hr>
+
+<h3>5) Low Stock (≤5)</h3>
+<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+    <div style="flex:1; min-width:300px;">
+        <table border="1" cellpadding="6">
+            <tr><th>SKU</th><th>Ad</th><th>Say</th></tr>
+            {% for p in low_stock %}
+            <tr><td>{{ p.sku }}</td><td>{{ p.name }}</td><td>{{ p.quantity }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">Məlumat yoxdur</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="flex:3; min-width:400px;">
+        {{ chart_low_stock|safe }}
+    </div>
+</div>
+
+<hr>
+<p><a href="{% url 'product_list' %}">← Məhsullar</a></p>

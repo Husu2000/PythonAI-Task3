@@ -7,4 +7,5 @@ urlpatterns = [
     path('products/upload/',views.product_upload,name='product_upload'),
     path('products/export',views.product_export,name='product_export'),
     path('products/template/',views.template_download,name='template_download'),
+    path('stats/',views.stats_view,name='stats'),
 ]
